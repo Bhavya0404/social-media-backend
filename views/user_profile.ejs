@@ -1,0 +1,20 @@
+        <link rel="stylesheet" href="/css/user_profile.css">
+        <h1>
+            Codeial / Profile Page
+        </h1>
+        
+        
+        <% if((locals.user.id == profileUser.id)  ){ %>
+
+            <form action="/users/update/<%= profileUser.id %>" method="post">
+                <input type="text" name="name" placeholder="Your name"   id="">
+                <input type="email" name="email" placeholder="Your email"   id="">
+                <input type="submit" value="Update">
+            </form>
+
+        <% } else { %>
+            <h1>
+                <%= profileUser.name %>
+                <%= profileUser.email %>
+            </h1>
+        <% } %>

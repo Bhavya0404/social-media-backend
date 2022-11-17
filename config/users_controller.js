@@ -1,5 +1,7 @@
 const e = require('express');
 const User = require('../models/user');
+const fs = require('fs');
+const path = require('path')
 
 // module.exports.profile = function(req, res){
 //     
@@ -119,14 +121,38 @@ module.exports.destroySession = function(req, res){
     
 }
 
-module.exports.update = function(req, res) {
+module.exports.update = async function(req, res) {
     // current logged in user req.user.id
     // req.params.id gives id jiski update karni hai
+
     if(req.user.id == req.params.id){
-        User.findByIdAndUpdate(req.params.id, req.body, function(err, user){
-            return res.redirect('/');
-        })
+        try{
+            let user = await User.findByIdAndUpdate(req.params.id, req.body);
+            User.uploadedAvatar(req, res, function(err){
+                if(err){
+                    console.log('****** Multer Error ******');
+                } else {
+                    // console.log(req.file);
+                    user.name = req.body.name;
+                    user.email = req.body.email;
+                    if(req.file){
+
+                        if(user.avatar){
+                            fs.unlinkSync(path.join(__dirname, '..' , user.avatar))
+                        }
+                        user.avatar = User.avatarPath + '/' + req.file.filename
+                    }
+                    user.save();
+                    return res.redirect('back');
+                }
+            })
+        } catch(error){
+            req.flash('error');
+            return res.redirect('back');
+        }
     } else {
+        req.flash('error', 'Unathorised');
         return res.status(401).send('Unauthorized')
     }
+   
 }
